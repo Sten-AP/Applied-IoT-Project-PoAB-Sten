@@ -1,7 +1,5 @@
-from typing import Union
 from fastapi import FastAPI
-from cbaken import Baken
-from influxdb import db_write, db_read, BUCKET
+from typing import Optional
 import json
 import pandas as pd
 from datetime import datetime
@@ -9,25 +7,28 @@ import random as r
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from influxdb_client_3 import InfluxDBClient3
 
-NOW = pd.Timestamp.now(tz='UCT').floor('ms')
+BUCKET = "FastAPItest"
+TOKEN = "19qF67GYbA-oxNwBoUbdgqtxZU7RwJ_AYStxdDCPecdfPWu6wdYKZ4_bmpnqvBF0Y_0_agG1BnqSo1MzhP5GzQ=="
+ORG = "AP"
+URL = "http://poab.iot-ap.be:8086"
 
+client = InfluxDBClient3(host=URL, token=TOKEN, org=ORG, database=BUCKET, enable_gzip=True)
 app = FastAPI()
 
 
-class CBaken(BaseModel):
+class Baken(BaseModel):
     id: str
-    status: str = False
-    lamp1: bool = False
-    lamp2: bool = False
-    lamp3: bool = False
+    lamp1: int = 0
+    lamp2: int = 0
+    lamp3: int = 0
     licht: int = None
     luchtdruk: int = None
     temp: float = None
     lat: float = None
     lon: float = None
-    time: datetime
-
+    time: datetime = pd.Timestamp.now(tz='UCT').floor('ms')
 
 @app.get("/")
 def read_root():
@@ -35,7 +36,7 @@ def read_root():
 
 
 # @app.get("/baken")
-# def get_baken_list():
+# def get_baken():
 #     query = f"""from (bucket: "{BUCKET}")
 #         |> range(start: 0)
 #         |> filter(fn: (r) => r["id"] == "eui-a8610a30373d9301")
@@ -48,36 +49,11 @@ def read_root():
 #     return {json.dumps(results)}
 
 
-@app.post("/aanmaken/baken/{id}")
-async def post_baken(id: int, baken: CBaken):
-    baken_dict = baken.dict()
-    baken_dict.update(id=f'baken{id}')
-    baken_dict.update(status=True)
-    baken_dict.update(lamp1=False)
-    baken_dict.update(lamp3=True)
-    baken_dict.update(licht=300)
-    baken_dict.update(luchtdruk=5)
-    baken_dict.update(temp=20.5)
-    baken_dict.update(lat=45.5)
-    baken_dict.update(lon=4.1)
-    return baken_dict
-    # return baken
-    # testbaken = {
-    #     'id': f'baken{id}',
-    #     'status': True,
-    #     'lamp1': True,
-    #     'lamp2': True,
-    #     'lamp3': True,
-    #     'licht': 300,
-    #     'luchtdruk': 5,
-    #     'temp': 20,
-    #     'lat': 45,
-    #     'lon': 4,
-    #     'time': NOW
-    # }
-
-    # testbaken_df = pd.DataFrame(testbaken).set_index('time')
-    # db_write.write(testbaken_df, data_frame_measurement_name='baken',
-    #                data_frame_tag_columns=['id'])
-
-    # uvicorn main:app --reload --host 0.0.0.0
+@app.post("/aanmaken/baken")
+async def post_baken(baken: Baken):
+    try:
+        baken_df = pd.DataFrame([dict(baken)]).set_index("time")
+        client.write(baken_df, data_frame_measurement_name='baken', data_frame_tag_columns=['id'], data_frame_field_columns=['lamp1, lamp2, lamp3, licht, luchtdruk, temp, lat, lon'])
+        return {"message": f"{baken.id} is succesvol aangemaakt."}
+    except:
+        return {"message": "Baken is niet aangemaakt."}
