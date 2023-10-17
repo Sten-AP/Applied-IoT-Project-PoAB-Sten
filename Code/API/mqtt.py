@@ -4,9 +4,10 @@ from paho.mqtt.client import Client
 import json
 import requests
 
+
 APPID = "portofantwerp-2023@ttn"
 PSW = 'NNSXS.2F7ZVD6AVRIBI4O7WOYSTPKDWMPG66NL2L6CARI.K3EHQPN5FLRTSTBF6NBJ4LPKF7V4Z2QVZQ5LMTBMGGPLMUN44EIA'
-URL = "http://localhost:8000"
+URL = "http://localhost:7000"
 
 client = Client()
 
@@ -23,7 +24,6 @@ def on_message(_client, userdata, msg):
     device_id = x["end_device_ids"]["device_id"]
 
     if "uplink_message" in x and device_id == "eui-a8610a30373d9301":
-        print(x)
         print(f"device id is {device_id}")
         payload = x["uplink_message"]["decoded_payload"]["payload"]
         print(f"de payload is {payload}")
@@ -39,8 +39,8 @@ def on_message(_client, userdata, msg):
             integer_part = int(parts[0]) if parts[0].isdigit() else 0
             converted_data.append(integer_part)
 
-        print(converted_data)
-        print(payload_data)
+        # print(converted_data)
+        # print(payload_data)
 
         query = {
             "id": str(device_id),
@@ -52,21 +52,21 @@ def on_message(_client, userdata, msg):
             "latitude": float(payload_data[5]),
             "longitude": float(payload_data[6]),
             "temperatuur": float(payload_data[7]),
-            "luchtdruk": int(payload_data[8])
+            "luchtdruk": float(payload_data[8]),
         }
 
         # Aanmaken van de baken
-        response = requests.post(f"{URL}/aanmaken/baken", json=query).json()
+        response = requests.post(f"{URL}/baken/aanmaken", json=query).json()
         print(response)
 
         # Lichtsterkte & autoset
-        response = requests.get(
-            f"{URL}/baken/{device_id}/autoset").json()
-        if response["autoset"]:
-            if payload_data[4] < 400:
-                create_downlink_all("LA1")
-            if payload_data[4] > 600:
-                create_downlink_all("LA0")
+        # response = requests.get(
+        #     f"{URL}/baken/{device_id}/autoset").json()
+        # if response["autoset"]:
+        #     if int(payload_data[4]) < 400:
+        #         create_downlink_all("LA1")
+        #     if int(payload_data[4]) > 600:
+        #         create_downlink_all("LA0")
 
 
 def on_disconnect(_client, userdata, rc):
@@ -77,6 +77,7 @@ def create_downlink(data, device_id):
     data = data.encode("ascii")
     data = base64.b64encode(data)
     data = data.decode("ascii")
+
     payload = {
         "downlinks": [
             {
@@ -138,3 +139,4 @@ def Init():
     client.connect("eu1.cloud.thethings.network", 8883, 60)
 
     client.loop_start()
+
