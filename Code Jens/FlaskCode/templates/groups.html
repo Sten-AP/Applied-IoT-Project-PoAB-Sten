@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en" style="position: relative;">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>POA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Login-Form-Basic-icons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+
+<body style="display: flex; background: rgb(33,37,41);"><iframe id="sidebar-iframe" src="header"></iframe>
+    <div class="float-end" style="width: 80%;height: 90vh;background: var(--bs-body-bg);margin-left: -2em;border-radius: 10px;margin-top: 5vh;">
+        <div class="d-flex" style="height: 7vh;margin-top: 20px;width: 100%;">
+            <h1 style="height: 100%;font-size: 30px;margin-left: 10px;margin-top: 10px;">Bakens</h1>
+            <div id="newGroup" class="d-flex float-end" style="cursor: pointer; width: 10vw;height: 70%;margin-left: 55vw;background: #59118e;border-radius: 10px;margin-top: 0px;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-plus" style="width: 3vw;height: 100%;color: var(--bs-body-bg);font-weight: bold;">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
+                </svg>
+                <p style="width: 2vw;height: 100%;margin-left: 1vw;color: var(--bs-body-bg);font-size: 3vh;text-align: center;line-height: 35px;margin-bottom: initial;">New</p>
+            </div>
+        </div>
+        <div style="width: 95%;background: #d6d6d6;margin-right: 2.5%;margin-left: 2.5%;height: .5vh;"></div>
+        <div class="float-start" style="height: 50vh;width: 70%;overflow: scroll;overflow-x: hidden;">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Group Id</th>
+                            <th>Device Id(s)</th>
+                            <th>Acties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if groups is iterable %}
+                        {% for group in groups %}
+                            <tr class="text-nowrap" style="overflow: hidden;width: initial;">
+                                <td>{{ group.group_id }}</td>
+                                <td style="overflow: visible;overflow-x: visible;"><span style="color: rgb(33, 37, 41);">{{ group.device_ids }}</span></td>
+                                <td><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" id="showData" group_id={{ group.group_id }} class="group-button bi bi-gear showData" style="width: auto;height: auto;margin-right: 20px;">
+                                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"></path>
+                                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"></path>
+                                    </svg><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" id="delete" group_id={{ group.group_id }} class="group-delete bi bi-trash3 delete" style="width: auto;height: auto;margin-right: 20px;">
+                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"></path>
+                                    </svg></td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="float-end" style="height: 50vh;width: 30%;overflow: scroll;overflow-x: hidden;">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Device Id</th>
+                            <th style="width: 20%;">View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if currentGroup is not none %}
+                        {% for device in devices %}
+                            <tr device_id={{ device.device_id }} class="text-nowrap clickable-row" style="overflow: hidden;width: initial;height: initial;">
+                                <td>{{ device.device_id }}</td>
+                                <td class="text-center"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-box-arrow-up-right">
+                                        <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"></path>
+                                        <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"></path>
+                                    </svg></td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="float-start" style="width: 95%;background: #d6d6d6;margin-right: 2.5%;margin-left: 2.5%;height: .5vh;"></div>
+        <div style="width: 100%;display: flex;">
+            <div style="height: 90%;width: 40vw;margin-left: 2%;padding-right: initial;margin-top: 2%;display: block;position: relative;">
+                <div style="display: flex;height: initial;">
+                    <p style="font-weight: bold;width: auto;font-size: 2vh;position: relative; white-space: nowrap">Group ID:</p>
+                    <p style="font-weight: bold;width: auto;margin-left: 10px;font-size: 2vh;position: relative;"><span style="font-weight: normal !important;">{{ currentGroup.group_id }}</span></p>
+                </div>
+                <div style="display: flex;height: initial; margin-top: -2vh">
+                    <p style="font-weight: bold;width: 8vw;">Lampen</p>
+                </div>
+                <div style="margin-top: -1vh; display: flex;position: relative;"><button class="btn btn-primary d-xxl-flex justify-content-xxl-center" type="button" style="margin: auto;margin-left: auto;display: flex;position: relative;margin-right: auto;font-size: 100%;">On</button><button class="btn btn-primary" type="button" style="margin: auto;margin-left: auto;display: flex;position: relative;margin-right: auto;font-size: 100%;">Off</button><button class="btn btn-primary d-xxl-flex justify-content-xxl-center" type="button" style="margin: auto;margin-left: auto;display: flex;position: relative;margin-right: auto;font-size: 100%;">Auto</button></div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/device.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/groups.js') }}"></script>
+</body>
+
+</html>

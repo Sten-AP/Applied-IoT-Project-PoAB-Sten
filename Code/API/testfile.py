@@ -1,21 +1,27 @@
 import requests
-from datetime import datetime
-import pandas as pd
-import json
-from main import client
+
+id = 3
 
 query = {
-    "id": f"baken{4}",
-    "lamp1": 0,
-    "lamp2": 0,
-    "lamp3": 0,
-    "licht": 500,
-    "luchtdruk": 5,
-    "temp": 20.5,
-    "lat": 45.5,
-    "lon": 4.1,
+    "id": f"{id}",
+    "status": 1,
+    "lamp_1": 1,
+    "lamp_2": 1,
+    "lamp_3": 1,
+    "lichtsterkte": 350,
+    "luchtdruk": 3,
+    "temperatuur": 17.5,
+    "latitude": 45.2,
+    "longitude": 4.2,
 }
 
-queryResponse = requests.post("http://localhost:8000/aanmaken/baken", json=query)
-baken = queryResponse.json()
-print(queryResponse.text)
+status = {"status": 1}
+
+# Aanmaken
+queryResponse = requests.post(
+    "http://localhost:8000/baken/3/status").json()
+print(queryResponse)
+
+# Gegevens opvragen
+# queryResponse = requests.get(f"http://localhost:8000/baken/3/autoset").json()
+# print(queryResponse["autoset"])

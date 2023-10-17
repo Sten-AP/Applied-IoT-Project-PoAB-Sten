@@ -1,0 +1,7 @@
+.clickable-row {
+    cursor: pointer;
+}
+
+.selectedRow {
+    background-color: lightgreen !important;
+}
