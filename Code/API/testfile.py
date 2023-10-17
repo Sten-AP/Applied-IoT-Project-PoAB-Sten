@@ -1,18 +1,18 @@
 import requests
 
-id = 3
+id = "eui-a1498a48257d4596"
 
 query = {
     "id": f"{id}",
-    "status": 0,
-    "lamp_1": 0,
-    "lamp_2": 0,
-    "lamp_3": 0,
-    "lichtsterkte": 350,
-    "luchtdruk": 20.5,
-    "temperatuur": 15.5,
-    "latitude": 45.2,
-    "longitude": 4.2,
+    "status": 1,
+    "lamp_1": 1,
+    "lamp_2": 1,
+    "lamp_3": 1,
+    "lichtsterkte": 926,
+    "luchtdruk": 16.3,
+    "temperatuur": 17.8,
+    "latitude": 45.21,
+    "longitude": 4.21,
 }
 
 status = {"status": 13.2}

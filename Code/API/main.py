@@ -1,3 +1,4 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 import pandas as pd
 from datetime import datetime
@@ -13,12 +14,25 @@ URL = "http://168.119.186.250:8086"
 API_URL = "http://localhost:7000"
 ORG = "AP"
 
+
 read_client = InfluxDBClient(url=URL, token=TOKEN, org=ORG)
 write_client = InfluxDBClient3(host=URL, token=TOKEN, org=ORG, database=BUCKET)
 read_api = read_client.query_api()
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",
+]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def records(response):
     gegevens = {}
@@ -58,13 +72,18 @@ def nieuwe_baken(baken: Baken):
         return {"message": f"fout bij het aanmaken van baken {baken.id}: {e}"}
 
 
-@app.post("/baken/aanmaken")
+@app.post("/baken/aanmaken/")
 async def baken_aanmaken(baken: Baken):
     return nieuwe_baken(baken)
 
 
-@app.post("/baken/{id}/{param}")
+@app.post("/baken/{id}/{param}/")
 async def baken_status_aanpassen(id: str, param: str, status: int | float):
+    if param == "status" and status == 1:
+        mqtt.create_downlink("LA1", id)
+    if param == "status" and status == 0:
+        mqtt.create_downlink("LA0", id)
+        
     if param in ["status", "lamp_1", "lamp2", "lamp_3", "lichtsterkte", "luchtdruk", "temperatuur", "latitude", "longitude", "autoset"]:
         try:
             get_query = f"""from(bucket: "{BUCKET}")
@@ -80,14 +99,14 @@ async def baken_status_aanpassen(id: str, param: str, status: int | float):
             baken = Baken(**gegevens)
 
             setattr(baken, param, status)
-
+            
             return nieuwe_baken(baken)
         except Exception as e:
             return {"error": str(e)}
     return {"error": f"{param} is niet aan te passen"}
 
 
-@app.get("/baken")
+@app.get("/baken/")
 async def alle_bakens_oplijsten():
     try:
         query = f"""from(bucket: "{BUCKET}")
@@ -118,7 +137,7 @@ async def alle_bakens_oplijsten():
         return {"error": str(e)}
 
 
-@app.get("/baken/{id}")
+@app.get("/baken/{id}/")
 async def baken_gegevens(id: str):
     try:
         query = f"""from(bucket: "{BUCKET}")
@@ -133,7 +152,7 @@ async def baken_gegevens(id: str):
         return {"error": str(e)}
 
 
-@app.get("/baken/{id}/{data}")
+@app.get("/baken/{id}/{data}/")
 async def specifieke_gegevens_per_baken(id: str, data: str):
     try:
         filter = f"""|> filter(fn: (r) => r["_field"] == "{data}")"""
@@ -158,5 +177,5 @@ async def specifieke_gegevens_per_baken(id: str, data: str):
 
 if __name__ == "__main__":
     mqtt.Init()
-    uvicorn.run("main:app", port=7000, log_level="info")
+    uvicorn.run("main:app", port=7000, log_level="info", reload=True)
     
