@@ -3,7 +3,7 @@ import { MaterialReactTable } from "material-react-table";
 import { useMemo } from "react";
 import { Button } from "@mui/material";
 
-export function Bakenlijst({ bakens, statusVeranderen, opvragenBakens }) {
+export function Bakenlijst({ bakens, statusVeranderen }) {
   const columns = useMemo(
     () => [
       {
@@ -77,7 +77,6 @@ export function Bakenlijst({ bakens, statusVeranderen, opvragenBakens }) {
             table.getSelectedRowModel().flatRows.map((row) => {
               var param = "status";
               statusVeranderen(row.getValue("id"), param, 1);
-              opvragenBakens();
               console.log(row.getValue("id") + " aangezet");
             });
           };
@@ -86,7 +85,6 @@ export function Bakenlijst({ bakens, statusVeranderen, opvragenBakens }) {
             table.getSelectedRowModel().flatRows.map((row) => {
               var param = "status";
               statusVeranderen(row.getValue("id"), param, 0);
-              opvragenBakens();
               console.log(row.getValue("id") + " uitgezet");
             });
           };
@@ -96,10 +94,8 @@ export function Bakenlijst({ bakens, statusVeranderen, opvragenBakens }) {
               var param = "autoset";
               if (row.getValue("autoset") === 0) {
                 statusVeranderen(row.getValue("id"), param, 1);
-                opvragenBakens();
               } else {
                 statusVeranderen(row.getValue("id"), param, 0);
-                opvragenBakens();
               }
               console.log(row.getValue("id") + " automatisch");
             });

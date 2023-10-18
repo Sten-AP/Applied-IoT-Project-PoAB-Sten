@@ -54,9 +54,11 @@ def on_message(_client, userdata, msg):
             "temperatuur": float(payload_data[7]),
             "luchtdruk": float(payload_data[8]),
         }
+        
+        
 
         # Aanmaken van de baken
-        response = requests.post(f"{URL}/baken/aanmaken", json=query).json()
+        response = requests.post(f"{URL}/baken/aanmaken/", json=query).json()
         print(response)
 
         # Lichtsterkte & autoset
@@ -73,11 +75,12 @@ def on_disconnect(_client, userdata, rc):
     print("Disconnected with result code " + str(rc))
 
 
-def create_downlink(data, device_id):
+def create_downlink(data, id):
+    print(data)
     data = data.encode("ascii")
     data = base64.b64encode(data)
     data = data.decode("ascii")
-
+    
     payload = {
         "downlinks": [
             {
@@ -89,8 +92,9 @@ def create_downlink(data, device_id):
     }
 
     payload_json = json.dumps(payload)
-    topic = "v3/{}/devices/{}/down/push".format(APPID, device_id)
+    topic = f"v3/{APPID}/devices/{id}/down/push"
     client.publish(topic, payload_json)
+    return payload
 
 
 def create_downlink_all(data):
@@ -99,29 +103,29 @@ def create_downlink_all(data):
     data = data.decode("ascii")
     print(f"data naar alle devices: {data}")
 
-    idlist = []
-    bakens = requests.get(f"{URL}/baken").json()
-    for baken in bakens:
-        if baken["autoset"]:
-            idlist.append(baken["id"])
+    # idlist = []
+    # bakens = requests.get(f"{URL}/baken/")
+    # for baken in bakens:
+    #     if baken["autoset"]:
+    #         idlist.append(baken["id"])
 
-    print(idlist)
-    if idlist:
-        for _id in idlist:
-            payload = {
-                "downlinks": [
-                    {
-                        "f_port": 1,
-                        "frm_payload": str(data),
-                        "priority": "NORMAL"
-                    }
-                ]
-            }
-            payload_json = json.dumps(payload)
-            topic = "v3/{}/devices/{}/down/push".format(APPID, _id)
-            client.publish(topic, payload_json)
-    else:
-        print("Geen devices met autoset 1")
+    # print(idlist)
+    # if idlist:
+    #     for _id in idlist:
+    #         payload = {
+    #             "downlinks": [
+    #                 {
+    #                     "f_port": 1,
+    #                     "frm_payload": str(data),
+    #                     "priority": "NORMAL"
+    #                 }
+    #             ]
+    #         }
+    # payload_json = json.dumps(payload)
+    # topic = "v3/{}/devices/{}/down/push".format(APPID, _id)
+    # client.publish(topic, payload_json)
+    # else:
+        # print("Geen devices met autoset 1")
 
 
 def on_publish(_client, userdata, mid):

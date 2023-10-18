@@ -8,7 +8,7 @@ from influxdb_client import InfluxDBClient
 import mqtt
 import uvicorn
 
-BUCKET = "FastAPItest"
+BUCKET = "bakens-poab"
 TOKEN = "19qF67GYbA-oxNwBoUbdgqtxZU7RwJ_AYStxdDCPecdfPWu6wdYKZ4_bmpnqvBF0Y_0_agG1BnqSo1MzhP5GzQ=="
 URL = "http://168.119.186.250:8086"
 API_URL = "http://localhost:7000"
@@ -80,9 +80,9 @@ async def baken_aanmaken(baken: Baken):
 @app.post("/baken/{id}/{param}/")
 async def baken_status_aanpassen(id: str, param: str, status: int | float):
     if param == "status" and status == 1:
-        mqtt.create_downlink("LA1", id)
+        print(mqtt.create_downlink("LA1", id))
     if param == "status" and status == 0:
-        mqtt.create_downlink("LA0", id)
+        print(mqtt.create_downlink("LA0", id))
         
     if param in ["status", "lamp_1", "lamp2", "lamp_3", "lichtsterkte", "luchtdruk", "temperatuur", "latitude", "longitude", "autoset"]:
         try:

@@ -19,6 +19,7 @@ export default function App() {
   const statusVeranderen = async (id, param, value) => {
     const response = await api.post(`/baken/${id}/${param}/?status=${value}`);
     console.log(response.data);
+    opvragenBakens();
   };
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function App() {
   return (
     <>
       <Header />
-      <Bakenlijst bakens={bakens} statusVeranderen={statusVeranderen} opvragenBakens={opvragenBakens} />
+      <Bakenlijst bakens={bakens} statusVeranderen={statusVeranderen} />
     </>
   );
 }
