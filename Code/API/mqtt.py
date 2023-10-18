@@ -57,6 +57,9 @@ def on_message(_client, userdata, msg):
         
         
 
+        
+        
+
         # Aanmaken van de baken
         response = requests.post(f"{URL}/baken/aanmaken/", json=query).json()
         print(response)

@@ -80,9 +80,9 @@ async def baken_aanmaken(baken: Baken):
 @app.post("/baken/{id}/{param}/")
 async def baken_status_aanpassen(id: str, param: str, status: int | float):
     if param == "status" and status == 1:
-        print(mqtt.create_downlink_all("LA1"))
+        print(mqtt.create_downlink("LA1", id))
     if param == "status" and status == 0:
-        print(mqtt.create_downlink_all("LA0"))
+        print(mqtt.create_downlink("LA0", id))
         
     if param in ["status", "lamp_1", "lamp2", "lamp_3", "lichtsterkte", "luchtdruk", "temperatuur", "latitude", "longitude", "autoset"]:
         try:
