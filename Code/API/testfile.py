@@ -1,6 +1,6 @@
 import requests
 
-id = "eui-a1498a48257d4596"
+id = "eui-1"
 
 query = {
     "id": f"{id}",
@@ -27,5 +27,5 @@ print(queryResponse.text)
 # print(queryResponse.text)
 
 # Gegevens opvragen
-# queryResponse = requests.get(f"http://localhost:8000/baken/3/autoset").json()
-# print(queryResponse["autoset"])
+queryResponse = requests.get(f"http://localhost:8000/baken/3/autoset").json()
+print(queryResponse["autoset"])
