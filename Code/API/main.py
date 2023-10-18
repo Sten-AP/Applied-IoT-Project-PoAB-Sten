@@ -5,14 +5,18 @@ from datetime import datetime
 from pydantic import BaseModel
 from influxdb_client_3 import InfluxDBClient3
 from influxdb_client import InfluxDBClient
-import mqtt
+from mqtt import client, create_downlink_all, create_downlink
 import uvicorn
+
 
 BUCKET = "bakens-poab"
 TOKEN = "19qF67GYbA-oxNwBoUbdgqtxZU7RwJ_AYStxdDCPecdfPWu6wdYKZ4_bmpnqvBF0Y_0_agG1BnqSo1MzhP5GzQ=="
 URL = "http://168.119.186.250:8086"
 API_URL = "http://localhost:7000"
 ORG = "AP"
+BASE_QUERY = f"""from(bucket: "{BUCKET}") 
+                |> range(start: 0)
+                |> filter(fn: (r) => r["_measurement"] == "baken")"""
 
 
 read_client = InfluxDBClient(url=URL, token=TOKEN, org=ORG)
@@ -34,18 +38,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def records(response):
-    gegevens = {}
-    for table in response:
-        for record in table.records:
-            gegevens.update({record.get_field(): record.get_value()})
-    return gegevens
 
-
-def nieuwe_tijd():
-    return pd.Timestamp.now(tz='UCT').floor('ms')
-
-
+# -----------Classes-----------
 class Baken(BaseModel):
     id: str
     status: int
@@ -61,6 +55,17 @@ class Baken(BaseModel):
     time: datetime = 0
 
 
+# -----------Functions-----------
+def records(response):
+    gegevens = {}
+    for table in response:
+        for record in table.records:
+            gegevens.update({record.get_field(): record.get_value()})
+    return gegevens
+
+def nieuwe_tijd():
+    return pd.Timestamp.now(tz='UCT').floor('ms')
+
 def nieuwe_baken(baken: Baken):
     try:
         baken.time = nieuwe_tijd()
@@ -71,49 +76,55 @@ def nieuwe_baken(baken: Baken):
     except Exception as e:
         return {"message": f"fout bij het aanmaken van baken {baken.id}: {e}"}
 
+def enkele_baken_aansturen(id, status):
+    if status == 1:
+        create_downlink("LA1", id)
+    if status == 0:
+        create_downlink("LA0", id)
 
+# def alle_baken_aansturen(bakens, status):
+#     idlist = []
+#     for baken in bakens:
+#         idlist.append(baken["id"])
+
+#     if status == 1:
+#         create_downlink_all("LA1", idlist)
+#     if status == 0:
+#         create_downlink_all("LA0", idlist)
+
+
+# -----------Routes-----------
 @app.post("/baken/aanmaken/")
 async def baken_aanmaken(baken: Baken):
     return nieuwe_baken(baken)
 
-
 @app.post("/baken/{id}/{param}/")
 async def baken_status_aanpassen(id: str, param: str, status: int | float):
-    if param == "status" and status == 1:
-        print(mqtt.create_downlink("LA1", id))
-    if param == "status" and status == 0:
-        print(mqtt.create_downlink("LA0", id))
-        
     if param in ["status", "lamp_1", "lamp2", "lamp_3", "lichtsterkte", "luchtdruk", "temperatuur", "latitude", "longitude", "autoset"]:
         try:
-            get_query = f"""from(bucket: "{BUCKET}")
-                    |> range(start: 0)
-                    |> filter(fn: (r) => r["_measurement"] == "baken")
-                    |> filter(fn: (r) => r["id"] == "{id}")
-                    """
-
-            response = read_api.query(get_query, org=ORG)
+            if param == "status":
+                enkele_baken_aansturen(id, status)
+                # bakens = await alle_bakens_oplijsten()
+                # alle_baken_aansturen(bakens, status)
+                
+            query = BASE_QUERY + f"""|> filter(fn: (r) => r["id"] == "{id}")"""
+            response = read_api.query(query, org=ORG)
             gegevens = records(response)
             gegevens["id"] = id
 
             baken = Baken(**gegevens)
 
             setattr(baken, param, status)
-            
+                        
             return nieuwe_baken(baken)
         except Exception as e:
             return {"error": str(e)}
     return {"error": f"{param} is niet aan te passen"}
 
-
 @app.get("/baken/")
 async def alle_bakens_oplijsten():
     try:
-        query = f"""from(bucket: "{BUCKET}")
-                |> range(start: 0)
-                |> filter(fn: (r) => r["_measurement"] == "baken")
-                """
-        response = read_api.query(query, org=ORG)
+        response = read_api.query(BASE_QUERY, org=ORG)
 
         records = []
         baken_ids = []
@@ -136,21 +147,15 @@ async def alle_bakens_oplijsten():
     except Exception as e:
         return {"error": str(e)}
 
-
 @app.get("/baken/{id}/")
 async def baken_gegevens(id: str):
     try:
-        query = f"""from(bucket: "{BUCKET}")
-                |> range(start: 0)
-                |> filter(fn: (r) => r["_measurement"] == "baken")
-                |> filter(fn: (r) => r["id"] == "{id}")
-                """
+        query = BASE_QUERY + f"""|> filter(fn: (r) => r["id"] == "{id}")"""
         response = read_api.query(query, org=ORG)
 
         return records(response)
     except Exception as e:
         return {"error": str(e)}
-
 
 @app.get("/baken/{id}/{data}/")
 async def specifieke_gegevens_per_baken(id: str, data: str):
@@ -161,13 +166,7 @@ async def specifieke_gegevens_per_baken(id: str, data: str):
         if data == "lampen":
             filter = """|> filter(fn: (r) => r["_field"] == "lamp_1" or r["_field"] == "lamp_2" or r["_field"] == "lamp_3")"""
 
-        query = f"""from(bucket: "{BUCKET}")
-            |> range(start: 0)
-            |> filter(fn: (r) => r["_measurement"] == "baken")
-            {filter}
-            |> filter(fn: (r) => r["id"] == "{id}")
-            """
-
+        query = BASE_QUERY + filter +f"""|> filter(fn: (r) => r["id"] == "{id}")"""
         response = read_api.query(query, org=ORG)
 
         return records(response)
@@ -176,6 +175,5 @@ async def specifieke_gegevens_per_baken(id: str, data: str):
 
 
 if __name__ == "__main__":
-    mqtt.Init()
-    uvicorn.run("main:app", port=7000, log_level="info", reload=True)
-    
+    client.loop_start()
+    uvicorn.run("main:app", port=7000, reload=True)

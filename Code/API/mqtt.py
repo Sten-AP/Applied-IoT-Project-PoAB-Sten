@@ -4,27 +4,31 @@ from paho.mqtt.client import Client
 import json
 import requests
 
-
+# -----------Constants-----------
 APPID = "portofantwerp-2023@ttn"
 PSW = 'NNSXS.2F7ZVD6AVRIBI4O7WOYSTPKDWMPG66NL2L6CARI.K3EHQPN5FLRTSTBF6NBJ4LPKF7V4Z2QVZQ5LMTBMGGPLMUN44EIA'
 URL = "http://localhost:7000"
 
+
+# -----------MQTT-settings-----------
 client = Client()
+client.enable_logger()
+client.tls_set(ca_certs=certifi.where())
+client.username_pw_set(APPID, PSW)
+client.connect("eu1.cloud.thethings.network", 8883, 60)
 
 
+# -----------Functions-----------
 def on_connect(_client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
-    topic = "#"
-    _client.subscribe(topic, 0)
-
+    _client.subscribe("#", 0)
 
 def on_message(_client, userdata, msg):
     x = json.loads(msg.payload.decode('utf-8'))
+    id = x["end_device_ids"]["device_id"]
 
-    device_id = x["end_device_ids"]["device_id"]
-
-    if "uplink_message" in x and device_id == "eui-a8610a30373d9301":
-        print(f"device id is {device_id}")
+    if "uplink_message" in x and id == "eui-a8610a30373d9301":
+        print(f"device id is {id}")
         payload = x["uplink_message"]["decoded_payload"]["payload"]
         print(f"de payload is {payload}")
 
@@ -39,11 +43,8 @@ def on_message(_client, userdata, msg):
             integer_part = int(parts[0]) if parts[0].isdigit() else 0
             converted_data.append(integer_part)
 
-        # print(converted_data)
-        # print(payload_data)
-
         query = {
-            "id": str(device_id),
+            "id": str(id),
             "status": int(payload_data[0]),
             "lamp_1": int(payload_data[1]),
             "lamp_2": int(payload_data[2]),
@@ -55,31 +56,16 @@ def on_message(_client, userdata, msg):
             "luchtdruk": float(payload_data[8]),
         }
         
-        
-
-        
-        
-
-        # Aanmaken van de baken
-        response = requests.post(f"{URL}/baken/aanmaken/", json=query).json()
-        print(response)
-
-        # Lichtsterkte & autoset
-        # response = requests.get(
-        #     f"{URL}/baken/{device_id}/autoset").json()
-        # if response["autoset"]:
-        #     if int(payload_data[4]) < 400:
-        #         create_downlink_all("LA1")
-        #     if int(payload_data[4]) > 600:
-        #         create_downlink_all("LA0")
-
+        print(requests.post(f"{URL}/baken/aanmaken/", json=query).json())
+        automatische_lichtsturing()
 
 def on_disconnect(_client, userdata, rc):
     print("Disconnected with result code " + str(rc))
 
+def on_publish(_client, userdata, mid):
+    print("Message published with MID: " + str(mid))
 
 def create_downlink(data, id):
-    print(data)
     data = data.encode("ascii")
     data = base64.b64encode(data)
     data = data.decode("ascii")
@@ -97,42 +83,46 @@ def create_downlink(data, id):
     payload_json = json.dumps(payload)
     topic = f"v3/{APPID}/devices/{id}/down/push"
     client.publish(topic, payload_json)
-    return payload
 
-
-def create_downlink_all(data):
-    data = data.encode("ascii")
-    data = base64.b64encode(data)
-    data = data.decode("ascii")
-    print(f"data naar alle devices: {data}")
-
-    idlist = []
-    bakens = requests.get(f"{URL}/baken/")
-    for baken in bakens:
-        if baken["autoset"]:
-            idlist.append(baken["id"])
-
-    print(idlist)
+def create_downlink_all(data, idlist):
     if idlist:
         for _id in idlist:
-            print(create_downlink(data, _id))
+            create_downlink(data, _id)
+
+def automatische_lichtsturing():
+    bakens = requests.get(f"{URL}/baken/").json()
+    idlist = []
+    for baken in bakens:
+        idlist.append(baken["id"])
+
+    autoset_en_lichtsterkte = []
+    for baken in bakens:
+        autoset_en_lichtsterkte.append({'lichtsterkte': baken['lichtsterkte'], 'autoset': baken['autoset']})
+
+    avg = [0, 0]
+    for item in autoset_en_lichtsterkte:
+        for param in item:
+            if param == "lichtsterkte":
+                avg[0] += item[param]
+            if param == "autoset" and item[param] == 1:
+                avg[1] += 1
+
+    if avg[0] != 0:
+            avg[0] = int(avg[0] / avg[1])
     else:
-        print("Geen devices met autoset 1")
+            avg[0] == None
 
+    if avg[0] is not None:
+        print(f"Gemiddeld lichtsterkte: {avg[0]}, aantal autoset: {avg[1]}")
+        if avg[0] < 400:
+            print("lamp aan door gemidelde")
+            create_downlink_all("LA1", idlist)
 
-def on_publish(_client, userdata, mid):
-    print("Message published with MID: " + str(mid))
+        if avg[0] > 600:
+            print("lampen uit door gemidelde")
+            create_downlink_all("LA0", idlist)
 
-
-def Init():
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.on_publish = on_publish
-
-    client.enable_logger()
-    client.tls_set(ca_certs=certifi.where())
-    client.username_pw_set(APPID, PSW)
-    client.connect("eu1.cloud.thethings.network", 8883, 60)
-
-    client.loop_start()
-
+# -----------MQTT-properties-----------
+client.on_connect = on_connect
+client.on_message = on_message
+client.on_publish = on_publish
