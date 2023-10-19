@@ -1,5 +1,5 @@
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from pandas import DataFrame, Timestamp
 from datetime import datetime
 from pydantic import BaseModel
@@ -12,7 +12,6 @@ from uvicorn import run
 # -----------Constants-----------
 # -------------URLS--------------
 INFLUXDB_URL = "http://168.119.186.250:8086"
-API_URL = "http://localhost:7000"
 REACT_URL = "http://localhost:5173"
 
 # ------------InfluxDB-----------
@@ -125,6 +124,13 @@ def automatische_lichtsturing():
 
 
 # -----------Routes-----------
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
+
 @app.post("/baken/aanmaken/")
 async def baken_aanmaken(baken: Baken):
     aangemaakte_baken = nieuwe_baken(baken)
@@ -209,4 +215,4 @@ async def specifieke_gegevens_per_baken(id: str, data: str):
 
 if __name__ == "__main__":
     client.loop_start()
-    run("main:app", port=7000, reload=True)
+    run("main:app", port=7000, reload=True, host="0.0.0.0")
