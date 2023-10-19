@@ -9,6 +9,7 @@ from mqtt import client, create_downlink_all, create_downlink
 from uvicorn import run
 
 
+# -----------Constants-----------
 INFLUXDB_URL = "http://168.119.186.250:8086"
 API_URL = "http://localhost:7000"
 REACT_URL = "http://localhost:5173"
@@ -21,13 +22,14 @@ BASE_QUERY = f"""from(bucket: "{BUCKET}")
                 |> filter(fn: (r) => r["_measurement"] == "baken")"""
 
 
+# -----------InfluxDB-settings-----------
 read_client = InfluxDBClient(url=INFLUXDB_URL, token=TOKEN, org=ORG)
 write_client = InfluxDBClient3(host=INFLUXDB_URL, token=TOKEN, org=ORG, database=BUCKET)
 read_api = read_client.query_api()
 
+
+# -----------App-settings-----------
 app = FastAPI()
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=REACT_URL,

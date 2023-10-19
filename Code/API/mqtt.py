@@ -7,7 +7,7 @@ import requests
 # -----------Constants-----------
 APPID = "portofantwerp-2023@ttn"
 PSW = 'NNSXS.2F7ZVD6AVRIBI4O7WOYSTPKDWMPG66NL2L6CARI.K3EHQPN5FLRTSTBF6NBJ4LPKF7V4Z2QVZQ5LMTBMGGPLMUN44EIA'
-URL = "http://localhost:7000"
+API_URL = "http://localhost:7000"
 
 
 # -----------MQTT-settings-----------
@@ -56,7 +56,7 @@ def on_message(_client, userdata, msg):
             "luchtdruk": float(payload_data[8]),
         }
         
-        print(requests.post(f"{URL}/baken/aanmaken/", json=query).json())
+        print(requests.post(f"{API_URL}/baken/aanmaken/", json=query).json())
         automatische_lichtsturing()
 
 def on_disconnect(_client, userdata, rc):
@@ -90,7 +90,7 @@ def create_downlink_all(data, idlist):
             create_downlink(data, _id)
 
 def automatische_lichtsturing():
-    bakens = requests.get(f"{URL}/baken/").json()
+    bakens = requests.get(f"{API_URL}/baken/").json()
     idlist = []
     for baken in bakens:
         idlist.append(baken["id"])
@@ -122,7 +122,7 @@ def automatische_lichtsturing():
             print("lampen uit door gemidelde")
             create_downlink_all("LA0", idlist)
 
-# -----------MQTT-properties-----------
+# -----------MQTT-functions-----------
 client.on_connect = on_connect
 client.on_message = on_message
 client.on_publish = on_publish
