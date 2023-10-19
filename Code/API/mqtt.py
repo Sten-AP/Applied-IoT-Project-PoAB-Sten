@@ -19,11 +19,11 @@ client.connect("eu1.cloud.thethings.network", 8883, 60)
 
 
 # -----------Functions-----------
-def on_connect(_client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
-    _client.subscribe("#", 0)
+    client.subscribe("#", 0)
 
-def on_message(_client, userdata, msg):
+def on_message(client, userdata, msg):
     x = json.loads(msg.payload.decode('utf-8'))
     id = x["end_device_ids"]["device_id"]
 
@@ -56,10 +56,10 @@ def on_message(_client, userdata, msg):
         print(requests.post(f"{API_URL}/baken/aanmaken/", json=query).json())
         automatische_lichtsturing()
 
-def on_disconnect(_client, userdata, rc):
+def on_disconnect(client, userdata, rc):
     print("Disconnected with result code " + str(rc))
 
-def on_publish(_client, userdata, mid):
+def on_publish(client, userdata, mid):
     print("Message published with MID: " + str(mid))
 
 def create_downlink(data, id):
