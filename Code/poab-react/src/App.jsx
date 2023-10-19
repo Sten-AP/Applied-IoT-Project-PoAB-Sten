@@ -30,6 +30,16 @@ export default function App() {
     <>
       <Header />
       <Bakenlijst bakens={bakens} statusVeranderen={statusVeranderen} />
+      <br />
+      <div className="iframes">
+        <iframe src="http://poab.iot-ap.be:3000/d-solo/f124257f-031c-4658-8f19-3fba329a3033/poab?orgId=1&panelId=3&refresh=5s&theme=light" width="900" height="400" frameborder="0"></iframe>
+        <iframe src="http://poab.iot-ap.be:3000/d-solo/f124257f-031c-4658-8f19-3fba329a3033/poab?orgId=1&theme=light&panelId=1&refresh=5s" width="900" height="400" frameborder="0"></iframe>
+      </div>
+      <br />
+      <div className="iframes">
+        <iframe src="http://poab.iot-ap.be:3000/d-solo/f124257f-031c-4658-8f19-3fba329a3033/poab?orgId=1&panelId=4&refresh=5s&theme=light" width="900" height="400" frameborder="0"></iframe>
+        <iframe src="http://poab.iot-ap.be:3000/d-solo/f124257f-031c-4658-8f19-3fba329a3033/poab?orgId=1&theme=light&panelId=5&refresh=5s" width="900" height="400" frameborder="0"></iframe>
+      </div>
     </>
   );
 }

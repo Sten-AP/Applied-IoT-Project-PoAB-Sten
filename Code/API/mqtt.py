@@ -54,7 +54,6 @@ def on_message(client, userdata, msg):
         }
         
         print(requests.post(f"{API_URL}/baken/aanmaken/", json=query).json())
-        automatische_lichtsturing()
 
 def on_disconnect(client, userdata, rc):
     print("Disconnected with result code " + str(rc))
@@ -86,38 +85,6 @@ def create_downlink_all(data, idlist):
         for _id in idlist:
             create_downlink(data, _id)
 
-def automatische_lichtsturing():
-    bakens = requests.get(f"{API_URL}/baken/").json()
-    idlist = []
-    for baken in bakens:
-        idlist.append(baken["id"])
-
-    autoset_en_lichtsterkte = []
-    for baken in bakens:
-        autoset_en_lichtsterkte.append({'lichtsterkte': baken['lichtsterkte'], 'autoset': baken['autoset']})
-
-    avg = [0, 0]
-    for item in autoset_en_lichtsterkte:
-        for param in item:
-            if param == "lichtsterkte":
-                avg[0] += item[param]
-            if param == "autoset" and item[param] == 1:
-                avg[1] += 1
-
-    if avg[0] != 0:
-            avg[0] = int(avg[0] / avg[1])
-    else:
-            avg[0] == None
-
-    if avg[0] is not None:
-        print(f"Gemiddeld lichtsterkte: {avg[0]}, aantal autoset: {avg[1]}")
-        if avg[0] < 400:
-            print("lamp aan door gemidelde")
-            create_downlink_all("LA1", idlist)
-
-        if avg[0] > 600:
-            print("lampen uit door gemidelde")
-            create_downlink_all("LA0", idlist)
 
 # -----------MQTT-functions-----------
 client.on_connect = on_connect

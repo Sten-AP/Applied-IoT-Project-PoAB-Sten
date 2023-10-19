@@ -11,6 +11,11 @@ body {
   margin: 0 auto;
 }
 
+.iframes {
+  display: flex;
+  justify-content: space-evenly;
+}
+
 .new-item-form {
   display: flex;
   flex-direction: column;

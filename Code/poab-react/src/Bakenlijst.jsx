@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import { MaterialReactTable } from "material-react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@mui/material";
 
 export function Bakenlijst({ bakens, statusVeranderen }) {
+  const [buttonState, setButtonState] = useState(true);
   const columns = useMemo(
     () => [
       {
@@ -19,21 +20,6 @@ export function Bakenlijst({ bakens, statusVeranderen }) {
       {
         accessorKey: "status",
         header: "Verwachte status",
-        size: 20,
-      },
-      {
-        accessorKey: "lamp_1",
-        header: "Lamp 1",
-        size: 20,
-      },
-      {
-        accessorKey: "lamp_2",
-        header: "Lamp 2",
-        size: 20,
-      },
-      {
-        accessorKey: "lamp_3",
-        header: "Lamp 3",
         size: 20,
       },
       {
@@ -73,6 +59,11 @@ export function Bakenlijst({ bakens, statusVeranderen }) {
         enableRowSelection
         positionToolbarAlertBanner="bottom"
         renderTopToolbarCustomActions={({ table }) => {
+          setButtonState(true);
+          if (table.getSelectedRowModel().flatRows.length > 0) {
+            setButtonState(false)
+          }
+
           const aanzetten = () => {
             table.getSelectedRowModel().flatRows.map((row) => {
               var param = "status";
@@ -103,13 +94,13 @@ export function Bakenlijst({ bakens, statusVeranderen }) {
 
           return (
             <div style={{ display: "flex", gap: "0.5rem" }}>
-              <Button color="success" disabled={!table.getIsSomeRowsSelected()} onClick={aanzetten} variant="contained">
+              <Button color="success" disabled={buttonState} onClick={aanzetten} variant="contained">
                 aan
               </Button>
-              <Button color="error" disabled={!table.getIsSomeRowsSelected()} onClick={uitzetten} variant="contained">
+              <Button color="error" disabled={buttonState} onClick={uitzetten} variant="contained">
                 uit
               </Button>
-              <Button color="info" disabled={!table.getIsSomeRowsSelected()} onClick={automatisch} variant="contained">
+              <Button color="info" disabled={buttonState} onClick={automatisch} variant="contained">
                 auto
               </Button>
             </div>

@@ -10,10 +10,12 @@ from uvicorn import run
 
 
 # -----------Constants-----------
+# -------------URLS--------------
 INFLUXDB_URL = "http://168.119.186.250:8086"
 API_URL = "http://localhost:7000"
 REACT_URL = "http://localhost:5173"
 
+# ------------InfluxDB-----------
 BUCKET = "bakens-poab"
 TOKEN = "19qF67GYbA-oxNwBoUbdgqtxZU7RwJ_AYStxdDCPecdfPWu6wdYKZ4_bmpnqvBF0Y_0_agG1BnqSo1MzhP5GzQ=="
 ORG = "AP"
@@ -82,6 +84,35 @@ def enkele_baken_aansturen(id, status):
     if status == 0:
         create_downlink("LA0", id)
 
+def automatische_lichtsturing():
+    autoset_en_lichtsterkte = []
+    for baken in alle_bakens_oplijsten():
+        autoset_en_lichtsterkte.append({"id": baken["id"], 'lichtsterkte': baken['lichtsterkte'], 'autoset': baken['autoset']})
+
+    avg = [0, 0]
+    for item in autoset_en_lichtsterkte:
+        for param in item:
+            if param == "lichtsterkte":
+                avg[0] += item[param]
+            if param == "autoset" and item[param] == 1:
+                avg[1] += 1
+
+    if avg[0] != 0:
+        avg[0] = int(avg[0] / avg[1])
+    else:
+        avg[0] == None
+
+    if avg[0] is not None:
+        print(f"Gemiddeld lichtsterkte: {avg[0]}, aantal autoset: {avg[1]}")
+        for item in autoset_en_lichtsterkte:
+            if item["autoset"] == 1:
+                if avg[0] < 400:
+                    print("lamp aan door gemidelde")
+                    enkele_baken_aansturen("LA1", item["id"])
+                if avg[0] > 600:
+                    print("lampen uit door gemidelde")
+                    enkele_baken_aansturen("LA0", item["id"])
+                    
 # def alle_baken_aansturen(bakens, status):
 #     idlist = []
 #     for baken in bakens:
@@ -96,7 +127,9 @@ def enkele_baken_aansturen(id, status):
 # -----------Routes-----------
 @app.post("/baken/aanmaken/")
 async def baken_aanmaken(baken: Baken):
-    return nieuwe_baken(baken)
+    aangemaakte_baken = nieuwe_baken(baken)
+    # await automatische_lichtsturing()
+    return aangemaakte_baken
 
 @app.post("/baken/{id}/{param}/")
 async def baken_status_aanpassen(id: str, param: str, status: int | float):
