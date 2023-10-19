@@ -1,38 +1,36 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-import pandas as pd
+from pandas import DataFrame, Timestamp
 from datetime import datetime
 from pydantic import BaseModel
 from influxdb_client_3 import InfluxDBClient3
 from influxdb_client import InfluxDBClient
 from mqtt import client, create_downlink_all, create_downlink
-import uvicorn
+from uvicorn import run
 
+
+INFLUXDB_URL = "http://168.119.186.250:8086"
+API_URL = "http://localhost:7000"
+REACT_URL = "http://localhost:5173"
 
 BUCKET = "bakens-poab"
 TOKEN = "19qF67GYbA-oxNwBoUbdgqtxZU7RwJ_AYStxdDCPecdfPWu6wdYKZ4_bmpnqvBF0Y_0_agG1BnqSo1MzhP5GzQ=="
-URL = "http://168.119.186.250:8086"
-API_URL = "http://localhost:7000"
 ORG = "AP"
 BASE_QUERY = f"""from(bucket: "{BUCKET}") 
                 |> range(start: 0)
                 |> filter(fn: (r) => r["_measurement"] == "baken")"""
 
 
-read_client = InfluxDBClient(url=URL, token=TOKEN, org=ORG)
-write_client = InfluxDBClient3(host=URL, token=TOKEN, org=ORG, database=BUCKET)
+read_client = InfluxDBClient(url=INFLUXDB_URL, token=TOKEN, org=ORG)
+write_client = InfluxDBClient3(host=INFLUXDB_URL, token=TOKEN, org=ORG, database=BUCKET)
 read_api = read_client.query_api()
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-]
-
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=REACT_URL,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,12 +62,12 @@ def records(response):
     return gegevens
 
 def nieuwe_tijd():
-    return pd.Timestamp.now(tz='UCT').floor('ms')
+    return Timestamp.now(tz='UCT').floor('ms')
 
 def nieuwe_baken(baken: Baken):
     try:
         baken.time = nieuwe_tijd()
-        baken_df = pd.DataFrame([dict(baken)]).set_index("time")
+        baken_df = DataFrame([dict(baken)]).set_index("time")
         write_client.write(baken_df, data_frame_measurement_name='baken',
                            data_frame_tag_columns=['id'])
         return {"message": f"baken {baken.id} is succesvol aangemaakt"}
@@ -176,4 +174,4 @@ async def specifieke_gegevens_per_baken(id: str, data: str):
 
 if __name__ == "__main__":
     client.loop_start()
-    uvicorn.run("main:app", port=7000, reload=True)
+    run("main:app", port=7000, reload=True)
