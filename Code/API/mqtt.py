@@ -28,18 +28,15 @@ def on_message(_client, userdata, msg):
     id = x["end_device_ids"]["device_id"]
 
     if "uplink_message" in x and id == "eui-a8610a30373d9301":
-        print(f"device id is {id}")
         payload = x["uplink_message"]["decoded_payload"]["payload"]
-        print(f"de payload is {payload}")
-
         payload_data = list(payload.split(":"))
 
+        print(f"ID: {id}")
+        print(f"Payload: {payload}")
+        
         converted_data = []
         for item in payload_data:
-            # Split each item by '.' to separate integer and decimal parts
             parts = item.split(".")
-
-            # Convert the integer part to an integer (if it's a valid integer)
             integer_part = int(parts[0]) if parts[0].isdigit() else 0
             converted_data.append(integer_part)
 
