@@ -9,12 +9,11 @@ from mqtt import client, create_downlink_all, create_downlink
 from uvicorn import run
 
 
-# py -m pip install -r requirements.txt
-
 # -----------Constants-----------
 # -------------URLS--------------
-INFLUXDB_URL = "http://168.119.186.250:8086"
-REACT_URL = "http://localhost:5173"
+INFLUXDB_URL = "http://10.5.0.5:8086"
+REACT_URLS = ["http://168.119.186.250:5000", "http://poab.iot-ap.be:5000", "http://poab.iot-ap.be"]
+API_URL = "http://10.5.0.4:3000"
 
 # ------------InfluxDB-----------
 BUCKET = "bakens-poab"
@@ -35,7 +34,7 @@ read_api = read_client.query_api()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=REACT_URL,
+    allow_origins=REACT_URLS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -217,4 +216,4 @@ async def specifieke_gegevens_per_baken(id: str, data: str):
 
 if __name__ == "__main__":
     client.loop_start()
-    run("main:app", port=7000, reload=True, host="0.0.0.0")
+    run("main:app", host="0.0.0.0", port=3000, reload=True)

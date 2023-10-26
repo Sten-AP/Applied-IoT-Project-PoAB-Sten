@@ -3,12 +3,11 @@ import certifi
 from paho.mqtt.client import Client
 import json
 import requests
+from main import API_URL
 
 # -----------Constants-----------
 APPID = "portofantwerp-2023@ttn"
 PSW = 'NNSXS.2F7ZVD6AVRIBI4O7WOYSTPKDWMPG66NL2L6CARI.K3EHQPN5FLRTSTBF6NBJ4LPKF7V4Z2QVZQ5LMTBMGGPLMUN44EIA'
-API_URL = "http://localhost:7000"
-
 
 # -----------MQTT-settings-----------
 client = Client()
