@@ -9,6 +9,8 @@ from mqtt import client, create_downlink_all, create_downlink
 from uvicorn import run
 
 
+# py -m pip install -r requirements.txt
+
 # -----------Constants-----------
 # -------------URLS--------------
 INFLUXDB_URL = "http://168.119.186.250:8086"
