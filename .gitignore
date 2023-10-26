@@ -23,8 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-Code\API\__pycache__\
-Code\API\venv\
-Code\API\testfile.py
+backend/__pycache__/
+backend/venv/
+backend/testfile.py
 README.md.backup
-safe-array-concat\
+safe-array-concat/
