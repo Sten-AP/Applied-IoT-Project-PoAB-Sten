@@ -7,15 +7,9 @@ from influxdb_client_3 import InfluxDBClient3
 from influxdb_client import InfluxDBClient
 from mqtt import client, create_downlink_all, create_downlink
 from uvicorn import run
-
+from urls import INFLUXDB_URL, REACT_URLS
 
 # -----------Constants-----------
-# -------------URLS--------------
-INFLUXDB_URL = "http://10.5.0.5:8086"
-REACT_URLS = ["http://168.119.186.250:5000", "http://poab.iot-ap.be:5000", "http://poab.iot-ap.be"]
-API_URL = "http://10.5.0.4:3000"
-
-# ------------InfluxDB-----------
 BUCKET = "bakens-poab"
 TOKEN = "19qF67GYbA-oxNwBoUbdgqtxZU7RwJ_AYStxdDCPecdfPWu6wdYKZ4_bmpnqvBF0Y_0_agG1BnqSo1MzhP5GzQ=="
 ORG = "AP"

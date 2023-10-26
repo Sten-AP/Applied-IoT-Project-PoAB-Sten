@@ -3,7 +3,7 @@ import certifi
 from paho.mqtt.client import Client
 import json
 import requests
-from main import API_URL
+from urls import API_URL
 
 # -----------Constants-----------
 APPID = "portofantwerp-2023@ttn"
